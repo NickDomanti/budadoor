@@ -6,3 +6,6 @@ if __name__ == '__main__':
 
     args[0] = 'client.py'
     PyInstaller.__main__.run(args)
+
+    args[0] = 'budadoor.py'
+    PyInstaller.__main__.run(args)
