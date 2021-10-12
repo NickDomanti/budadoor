@@ -1,5 +1,4 @@
-import os.path
-
+import os
 import helpers as hlp
 from termcolor import cprint
 from helpers import BudaSocket
