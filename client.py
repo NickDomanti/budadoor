@@ -6,10 +6,7 @@ from termcolor import cprint
 from helpers import BudaSocket, decode
 
 
-def run():
-    host = hlp.argv_or_default(1, '127.0.0.1')
-    port = hlp.argv_or_default(2, 12345)
-    
+def run(host, port):
     subprocess.run('chcp 65001', shell=True, capture_output=True)
 
     engine = pyttsx3.init()
@@ -71,4 +68,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    run(hlp.argv_or_default(1, '127.0.0.1'), hlp.argv_or_default(2, 12345))

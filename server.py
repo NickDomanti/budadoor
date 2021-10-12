@@ -4,11 +4,8 @@ from termcolor import cprint
 from helpers import BudaSocket
 
 
-def run():
-    host = '0.0.0.0'
-    port = hlp.argv_or_default(1, 12345)
-
-    with BudaSocket.get_server(host, port) as server:
+def run(port):
+    with BudaSocket.get_server('0.0.0.0', port) as server:
         try:
             while True:
                 cwd = server.recv_str()
@@ -57,4 +54,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    run(hlp.argv_or_default(1, 12345))
