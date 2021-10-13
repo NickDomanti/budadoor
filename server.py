@@ -32,10 +32,10 @@ def run(port):
                         break
 
                 if cmd == 'gn':
-                    cprint('Buonanotte', 'magenta')
+                    cprint('[*] Buonanotte.', 'magenta')
                     break
                 elif cmd == 'exit':
-                    cprint('Chiusura server, client rimane acceso', 'green')
+                    cprint('[*] Chiusura server, client rimane acceso.', 'green')
                     break
                 elif cmd.startswith('grabfile'):
                     data = server.recv()

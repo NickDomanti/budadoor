@@ -24,12 +24,16 @@ class BudaSocket:
 
         while True:
             try:
-                cprint(f'In attesa di connessione con {host}:{port}', 'yellow')
+                cprint(f'[*] Tentativo di connessione con {host}:{port}... ', 'yellow', end='')
                 sock.connect((host, port))
+            except TimeoutError:
+                cprint('Timeout.', 'red')
+                time.sleep(2)
             except ConnectionRefusedError:
+                cprint('Connessione rifiutata.', 'red')
                 time.sleep(2)
             else:
-                cprint('Connessione riuscita', 'green')
+                cprint('Connessione riuscita.', 'green')
                 break
 
         return cls(sock)
@@ -40,7 +44,7 @@ class BudaSocket:
         sock.bind((host, port))
         sock.listen()
 
-        cprint(f'In ascolto su porta {port}', 'yellow')
+        cprint(f'[*] In ascolto su porta {port}... ', 'yellow', end='')
         conn, addr = sock.accept()
         cprint(f'Connessione accettata con {addr[0]}:{addr[1]}', 'green')
 
@@ -93,7 +97,7 @@ def print_error(msg: str, block: bool = True):
     if block:
         input(colored(f'[!] {msg}...', 'red'))
     else:
-        cprint('[!] ' + msg, 'red')
+        cprint(f'[!] {msg}.', 'red')
 
 
 def decode(data: bytes):

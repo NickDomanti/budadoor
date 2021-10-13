@@ -28,7 +28,7 @@ def run(host, port):
                     cmd = decode(data)
 
                     if cmd == 'gn':
-                        cprint('Buonanotte', 'magenta')
+                        cprint('[*] Buonanotte.', 'magenta')
                         conn_loop = False
                         break
                     elif cmd.startswith('cd') and cmd != "cd":
