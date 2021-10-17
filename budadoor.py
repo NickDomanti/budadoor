@@ -1,26 +1,37 @@
 import sys
+import getopt
 
 
 def usage():
-    print('Utilizzo corretto:')
-    print('budadoor server <port>')
-    print('budadoor client <server_ip> <port>')
+    print(f'Opzioni di {sys.argv[0]}:')
+    print('-m, = modalità ("server" o "client")')
+    print('-i, = indirizzo IP del server, da usare solo con "-m client"')
+    print('-p, = porta del socket')
 
 
 def main():
     try:
-        method = sys.argv[1]
-        if method == 'client':
+        opts, args = getopt.getopt(sys.argv[1:], 'm:i:p:')
+
+        for opt, arg in opts:
+            if opt == '-m':
+                mode = arg
+            elif opt == '-i':
+                ip = arg
+            elif opt == '-p':
+                port = int(arg)
+
+        if mode == 'client':
             import client
-            client.run(sys.argv[2], int(sys.argv[3]))
-        elif method == 'server':
+            client.run(ip, port)
+        elif mode == 'server':
             import server
-            server.run(int(sys.argv[2]))
+            server.run(port)
         else:
             usage()
     except ValueError:
-        print('Il parametro "port" deve essere un numero intero')
-    except IndexError:
+        print('-p deve essere un numero intero')
+    except (UnboundLocalError, IndexError, getopt.GetoptError):
         usage()
 
 

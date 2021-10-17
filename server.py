@@ -51,6 +51,8 @@ def run(port):
             hlp.print_error('Connessione resettata dal client')
         except ConnectionRefusedError:
             hlp.print_error('Connessione rifiutata dal client')
+        except KeyboardInterrupt:
+            hlp.print_error('Interruzione forzata', False)
 
 
 if __name__ == '__main__':

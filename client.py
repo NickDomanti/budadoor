@@ -65,6 +65,8 @@ def run(host, port):
                 hlp.print_error('Connessione resettata dal server', False)
             except ConnectionAbortedError:
                 hlp.print_error('Connessione annullata dal server', False)
+            except KeyboardInterrupt:
+                hlp.print_error('Interruzione forzata', False)
 
 
 if __name__ == '__main__':
