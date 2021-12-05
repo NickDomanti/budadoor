@@ -5,6 +5,7 @@ import chardet
 import colorama
 from typing import Union
 from socket import socket
+from itertools import count
 from termcolor import cprint, colored
 
 
@@ -71,13 +72,22 @@ class BudaSocket:
     def send(self, data: Union[str, bytes]):
         self.sock.sendall(data.encode() if type(data) is str else data)
 
-    def send_file(self, path: str):
-        with open(path, 'rb') as file:
-            data = file.read()
+    def send_file(self, path: str = None, filename: str = None, data: bytes = None):
+        if path:
+            with open(path, 'rb') as file:
+                data = file.read()
+            filename = filename or path.split('\\')[-1]
+        elif not filename:
+            print_error('Impossibile inviare file, percorso e nome del file mancanti', False)
+            return
+
+        if not data:
+            print_error('Impossibile inviare file, bytes mancanti\n', False)
+            return
 
         header = {
             'protocol': 'send_file',
-            'filename': path.split('\\')[-1]
+            'filename': filename
         }
 
         self.send(json.dumps(header).encode() + b'<END_OF_JSON_HEADER>' + data)
@@ -114,6 +124,31 @@ def argv_or_default(argv_index: int, default):
 
 def fix_white_spaces(string: str):
     return ' '.join(string.split())
+
+
+def crypt(original: str, key: str, decrypt: bool = False):
+    result = ''
+
+    for i, original_char in enumerate(original):
+        try:
+            key_char = key[i]
+        except IndexError:
+            for c in count(1):
+                try:
+                    key_char = key[i - len(key) * c]
+                except IndexError:
+                    pass
+                else:
+                    break
+
+        if decrypt:
+            enc_char = chr(ord(original_char) - ord(key_char))
+        else:
+            enc_char = chr(ord(original_char) + ord(key_char))
+
+        result += enc_char
+
+    return result
 
 
 colorama.init()
